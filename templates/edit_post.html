@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+{% block title %}Edit post | BlogSpace{% endblock %}
+{% block content %}
+<section class="form-page">
+  <p class="eyebrow">UPDATE STORY</p>
+  <h1>Edit your post</h1>
+  <form class="editor-form" method="POST">
+    <label for="title">Post title</label>
+    <input id="title" name="title" type="text" maxlength="200" required value="{{ post.title }}">
+    <label for="content">Content</label>
+    <textarea id="content" name="content" rows="12" required>{{ post.content }}</textarea>
+    <div class="form-actions">
+      <a class="button button-light" href="{{ url_for('post_detail', post_id=post.id) }}">Cancel</a>
+      <button class="button" type="submit">Save changes</button>
+    </div>
+  </form>
+</section>
+{% endblock %}
