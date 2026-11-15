@@ -1,0 +1,45 @@
+
+{% extends "base.html" %}
+
+{% block title %}My Profile | BlogSpace{% endblock %}
+
+{% block content %}
+
+<section class="form-page">
+
+    <h1>My Profile</h1>
+
+    <div class="profile-card">
+        <h2>{{ user.username }}</h2>
+
+        <p><strong>Email:</strong> {{ user.email }}</p>
+
+        <hr>
+
+        <h2>My Blog Posts</h2>
+
+        {% for post in user.posts %}
+
+            <div class="post-card">
+                <h3>
+                    <a href="{{ url_for('post_detail', post_id=post.id) }}">
+                        {{ post.title }}
+                    </a>
+                </h3>
+
+                <p>{{ post.content[:150] }}</p>
+            </div>
+
+        {% else %}
+
+            <p>No blog posts yet.</p>
+
+        {% endfor %}
+
+        <a href="{{ url_for('home') }}">Back to Home</a>
+
+    </div>
+
+</section>
+
+{% endblock %}

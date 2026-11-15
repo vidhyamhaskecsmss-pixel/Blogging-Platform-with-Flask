@@ -1,19 +1,28 @@
+
 {% extends "base.html" %}
+
 {% block title %}Login | BlogSpace{% endblock %}
+
 {% block content %}
-<div class="auth-wrap">
-  <section class="auth-card">
-    <p class="eyebrow">WELCOME BACK</p>
-    <h1>Log in</h1>
-    <p class="muted">Continue sharing your ideas.</p>
+
+<section class="form-page">
+    <h1>Login to BlogSpace</h1>
+
     <form method="POST">
-      <label for="email">Email address</label>
-      <input id="email" name="email" type="email" required autocomplete="email" placeholder="you@example.com">
-      <label for="password">Password</label>
-      <input id="password" name="password" type="password" required autocomplete="current-password" placeholder="Your password">
-      <button class="button full-width" type="submit">Log in</button>
+        <label>Email</label>
+        <input type="email" name="email" required
+               placeholder="Enter your email">
+
+        <label>Password</label>
+        <input type="password" name="password" required
+               placeholder="Enter your password">
+
+        <button type="submit" class="button">Login</button>
     </form>
-    <p class="auth-switch">New to BlogSpace? <a href="{{ url_for('register') }}">Create an account</a></p>
-  </section>
-</div>
+
+    <p>Don't have an account?
+        <a href="{{ url_for('register') }}">Create account</a>
+    </p>
+</section>
+
 {% endblock %}
