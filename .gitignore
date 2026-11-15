@@ -1,8 +1,6 @@
 venv/
-**/venv/
 __pycache__/
 *.pyc
 instance/
-*.db
 .env
-Blogging_Platform_Complete_Code/
+*.db
