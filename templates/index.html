@@ -1,69 +1,193 @@
+
 {% extends "base.html" %}
+
 {% block title %}Home | BlogSpace{% endblock %}
+
 {% block content %}
+
+<!-- HERO SECTION -->
 <section class="hero">
-  <p class="eyebrow">SHARE IDEAS. BUILD COMMUNITY.</p>
-  <h1>Stories and ideas<br><span>worth sharing.</span></h1>
-  <p class="hero-copy">Create posts, discover new perspectives, and join the conversation.</p>
-  {% if current_user.is_authenticated %}
-    <a class="button" href="{{ url_for('create_post') }}">＋ Write your first post</a>
-  {% else %}
-    <a class="button" href="{{ url_for('register') }}">Get started</a>
-  {% endif %}
+    <p class="eyebrow">SHARE IDEAS. BUILD COMMUNITY.</p>
+
+    <h1>
+        Stories and ideas<br>
+        <span>worth sharing.</span>
+    </h1>
+
+    <p class="hero-copy">
+        Create posts, discover new perspectives, and join the conversation.
+    </p>
+
+    {% if current_user.is_authenticated %}
+        <a class="button" href="{{ url_for('create_post') }}">
+            ＋ Write your first post
+        </a>
+    {% else %}
+        <a class="button" href="{{ url_for('register') }}">
+            Get started
+        </a>
+    {% endif %}
 </section>
 
+
+<!-- SEARCH AND FILTER SECTION -->
 <section class="section-heading">
-  <div>
-    <p class="eyebrow">THE COMMUNITY</p>
-    <h2>Latest blog posts</h2>
-  </div>
-  <form class="search-form" method="GET" action="{{ url_for('home') }}">
-    <input type="search" name="q" value="{{ search_query }}" placeholder="Search posts...">
-    <button class="button button-small" type="submit">Search</button>
-    {% if search_query %}<a class="clear-link" href="{{ url_for('home') }}">Clear</a>{% endif %}
-  </form>
+
+    <div>
+        <p class="eyebrow">THE COMMUNITY</p>
+        <h2>Latest blog posts</h2>
+    </div>
+
+    <form class="search-form" method="GET" action="{{ url_for('home') }}">
+
+        <!-- SEARCH BY TITLE OR CONTENT -->
+        <input
+            type="search"
+            name="q"
+            value="{{ search_query }}"
+            placeholder="Search posts..."
+        >
+
+        <!-- FILTER BY TAG -->
+        <select name="tag">
+            <option value="">All Tags</option>
+
+            {% for tag in tags %}
+                <option
+                    value="{{ tag.name }}"
+                    {% if tag_filter == tag.name %}selected{% endif %}
+                >
+                    {{ tag.name }}
+                </option>
+            {% endfor %}
+
+        </select>
+
+        <button class="button button-small" type="submit">
+            Search
+        </button>
+
+        {% if search_query or tag_filter %}
+            <a class="clear-link" href="{{ url_for('home') }}">
+                Clear
+            </a>
+        {% endif %}
+
+    </form>
+
 </section>
 
-{% if posts %}
-  <div class="post-grid">
-    {% for post in posts.items %}
-      <article class="post-card">
-        <p class="post-meta">By {{ post.author.username }} · {{ post.date_created.strftime('%d %b %Y') }}</p>
-        <h3><a href="{{ url_for('post_detail', post_id=post.id) }}">{{ post.title }}</a></h3>
-        <p class="post-excerpt">{{ post.content[:180] }}{% if post.content|length > 180 %}…{% endif %}</p>
-        <a class="read-link" href="{{ url_for('post_detail', post_id=post.id) }}">Read article →</a>
-      </article>
-    {% endfor %}
 
-<div class="pagination">
+<!-- BLOG POSTS -->
+{% if posts.items %}
 
-    {% if posts.has_prev %}
-        <a href="{{ url_for('home', page=posts.prev_num, q=search_query) }}">
-            Previous
-        </a>
-    {% endif %}
+    <div class="post-grid">
 
-    <span>
-        Page {{ posts.page }} of {{ posts.pages }}
-    </span>
+        {% for post in posts.items %}
 
-    {% if posts.has_next %}
-        <a href="{{ url_for('home', page=posts.next_num, q=search_query) }}">
-            Next
-        </a>
-    {% endif %}
+            <article class="post-card">
 
-</div>
+                <p class="post-meta">
+                    By {{ post.author.username }}
+                    ·
+                    {{ post.date_created.strftime('%d %b %Y') }}
+                </p>
 
-  </div>
+                <h3>
+                    <a href="{{ url_for('post_detail', post_id=post.id) }}">
+                        {{ post.title }}
+                    </a>
+                </h3>
+
+                <p class="post-excerpt">
+                    {{ post.content[:180] }}
+                    {% if post.content|length > 180 %}…{% endif %}
+                </p>
+
+                <!-- DISPLAY POST TAGS -->
+                {% if post.tags %}
+                    <div class="post-tags">
+                        {% for tag in post.tags %}
+                            <a href="{{ url_for('home', tag=tag.name) }}">
+                                #{{ tag.name }}
+                            </a>
+                        {% endfor %}
+                    </div>
+                {% endif %}
+
+                <a
+                    class="read-link"
+                    href="{{ url_for('post_detail', post_id=post.id) }}"
+                >
+                    Read article →
+                </a>
+
+            </article>
+
+        {% endfor %}
+
+    </div>
+
+
+    <!-- PAGINATION -->
+    <div class="pagination">
+
+        {% if posts.has_prev %}
+            <a href="{{ url_for('home',
+                page=posts.prev_num,
+                q=search_query,
+                tag=tag_filter) }}">
+                Previous
+            </a>
+        {% endif %}
+
+        <span>
+            Page {{ posts.page }} of {{ posts.pages }}
+        </span>
+
+        {% if posts.has_next %}
+            <a href="{{ url_for('home',
+                page=posts.next_num,
+                q=search_query,
+                tag=tag_filter) }}">
+                Next
+            </a>
+        {% endif %}
+
+    </div>
+
+
 {% else %}
-  <div class="empty-state">
-    <div class="empty-icon">✎</div>
-    <h3>{% if search_query %}No matching posts{% else %}No posts yet{% endif %}</h3>
-    <p>{% if search_query %}Try another search term.{% else %}Be the first to share an idea with the community.{% endif %}</p>
-    {% if current_user.is_authenticated and not search_query %}
-      <a class="button" href="{{ url_for('create_post') }}">Create a post</a>
-    {% endif %}
-  </div>
+
+    <!-- EMPTY STATE -->
+    <div class="empty-state">
+
+        <div class="empty-icon">✎</div>
+
+        <h3>
+            {% if search_query or tag_filter %}
+                No matching posts
+            {% else %}
+                No posts yet
+            {% endif %}
+        </h3>
+
+        <p>
+            {% if search_query or tag_filter %}
+                Try another search term or select a different tag.
+            {% else %}
+                Be the first to share an idea with the community.
+            {% endif %}
+        </p>
+
+        {% if current_user.is_authenticated and not search_query and not tag_filter %}
+            <a class="button" href="{{ url_for('create_post') }}">
+                Create a post
+            </a>
+        {% endif %}
+
+    </div>
+
 {% endif %}
+
 {% endblock %}

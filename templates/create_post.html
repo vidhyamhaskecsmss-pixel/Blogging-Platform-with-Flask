@@ -1,23 +1,66 @@
+
 {% extends "base.html" %}
-{% block title %}Write a post | BlogSpace{% endblock %}
+
+{% block title %}Create Post | BlogSpace{% endblock %}
+
 {% block content %}
+
 <section class="form-page">
-  <p class="eyebrow">NEW STORY</p>
-  <h1>Write a blog post</h1>
-  <p class="muted">Give your post a clear title and share your thoughts.</p>
-  <form class="editor-form" method="POST">
-    {{ form.hidden_tag() }}
-    <label for="title">Post title</label>
-    <input id="title" name="title" type="text" maxlength="200" required placeholder="Enter an interesting title">
-    <label for="content">Content</label>
-    <textarea id="content" name="content" rows="12" required placeholder="Start writing here..."></textarea>
-    <label for="tags">Tags</label>
-<input id="tags" name="tags" type="text"
-       placeholder="Python, Flask, Web Development">
-    <div class="form-actions">
-      <a class="button button-light" href="{{ url_for('home') }}">Cancel</a>
-      <button class="button" type="submit">Publish post</button>
-    </div>
-  </form>
+
+    <p class="eyebrow">NEW STORY</p>
+
+    <h1>Write a blog post</h1>
+
+    <p>Give your post a clear title and share your thoughts.</p>
+
+    <form method="POST" action="{{ url_for('create_post') }}">
+
+        {{ form.hidden_tag() }}
+
+        <!-- POST TITLE -->
+        <label for="title">Post title</label>
+
+        {{ form.title(
+            id="title",
+            placeholder="Enter an interesting title",
+            required=True
+        ) }}
+
+        <!-- POST CONTENT -->
+        <label for="content">Content</label>
+
+        {{ form.content(
+            id="content",
+            placeholder="Start writing here...",
+            rows="12",
+            required=True
+        ) }}
+
+        <!-- POST TAGS -->
+        <label for="tags">Tags</label>
+
+        <input
+            type="text"
+            id="tags"
+            name="tags"
+            placeholder="Python, Flask, Web Development"
+        >
+
+        <!-- BUTTONS -->
+        <div class="form-actions">
+
+            <a href="{{ url_for('home') }}" class="button button-secondary">
+                Cancel
+            </a>
+
+            <button type="submit" class="button">
+                Publish post
+            </button>
+
+        </div>
+
+    </form>
+
 </section>
+
 {% endblock %}

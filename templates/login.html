@@ -4,25 +4,24 @@
 {% block title %}Login | BlogSpace{% endblock %}
 
 {% block content %}
-
 <section class="form-page">
-    <h1>Login to BlogSpace</h1>
+    <h1>Welcome Back</h1>
+    <p>Login to your BlogSpace account.</p>
 
-    <form method="POST">
-        <label>Email</label>
-        <input type="email" name="email" required
-               placeholder="Enter your email">
+    <form method="POST" action="{{ url_for('login') }}">
+        <label for="email">Email</label>
+        <input type="email" id="email" name="email"
+               placeholder="Enter your email" required>
 
-        <label>Password</label>
-        <input type="password" name="password" required
-               placeholder="Enter your password">
+        <label for="password">Password</label>
+        <input type="password" id="password" name="password"
+               placeholder="Enter your password" required>
 
         <button type="submit" class="button">Login</button>
     </form>
 
     <p>Don't have an account?
-        <a href="{{ url_for('register') }}">Create account</a>
+        <a href="{{ url_for('register') }}">Register here</a>
     </p>
 </section>
-
 {% endblock %}

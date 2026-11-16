@@ -11,7 +11,7 @@ from sqlalchemy import or_
 from flask_migrate import Migrate
 
 from extensions import db, login_manager
-from models import User, Post, Comment
+from models import User, Post, Comment, Tag
 
 
 app = Flask(__name__)
@@ -29,34 +29,69 @@ login_manager.login_view = "login"
 migrate = Migrate(app, db)
 
 
-# Flask-WTF Post Form
+# POST FORM
 class PostForm(FlaskForm):
     title = StringField("Title", validators=[DataRequired()])
     content = TextAreaField("Content", validators=[DataRequired()])
     submit = SubmitField("Publish")
 
 
+# LOAD USER
 @login_manager.user_loader
 def load_user(user_id):
     return db.session.get(User, int(user_id))
 
 
-# HOME PAGE WITH SEARCH AND PAGINATION
+# UPDATE POST TAGS
+def update_post_tags(post, tags_text):
+    tag_names = set(
+        name.strip()
+        for name in (tags_text or "").split(",")
+        if name.strip()
+    )
+
+    tags = []
+
+    for name in tag_names:
+        tag = Tag.query.filter(
+            db.func.lower(Tag.name) == name.lower()
+        ).first()
+
+        if not tag:
+            tag = Tag(name=name)
+            db.session.add(tag)
+            db.session.flush()
+
+        tags.append(tag)
+
+    post.tags = tags
+
+
+# HOME PAGE WITH SEARCH, TAG FILTERING AND PAGINATION
 @app.route("/")
 def home():
     search_query = request.args.get("q", "").strip()
+    tag_filter = request.args.get("tag", "").strip()
     page = request.args.get("page", 1, type=int)
 
     posts_query = Post.query
 
     if search_query:
         pattern = f"%{search_query}%"
+
         posts_query = posts_query.filter(
             or_(
                 Post.title.ilike(pattern),
                 Post.content.ilike(pattern)
             )
         )
+
+    if tag_filter:
+        posts_query = posts_query.filter(
+            Post.tags.any(Tag.name == tag_filter)
+        )
+
+    tags = Tag.query.order_by(Tag.name).all()
 
     posts = posts_query.order_by(
         Post.date_created.desc()
@@ -69,7 +104,9 @@ def home():
     return render_template(
         "index.html",
         posts=posts,
-        search_query=search_query
+        search_query=search_query,
+        tags=tags,
+        tag_filter=tag_filter
     )
 
 
@@ -86,20 +123,26 @@ def register():
 
         if not username or not email or not password:
             flash("Please complete all fields.", "error")
+
         elif len(username) < 3:
             flash("Username must contain at least 3 characters.", "error")
+
         elif len(password) < 8:
             flash("Password must contain at least 8 characters.", "error")
+
         elif User.query.filter_by(username=username).first():
             flash("Username already registered.", "error")
+
         elif User.query.filter_by(email=email).first():
             flash("Email already registered.", "error")
+
         else:
             user = User(
                 username=username,
                 email=email,
                 password=generate_password_hash(password)
             )
+
             db.session.add(user)
             db.session.commit()
 
@@ -154,10 +197,19 @@ def create_post():
         )
 
         db.session.add(post)
+
+        update_post_tags(
+            post,
+            request.form.get("tags", "")
+        )
+
         db.session.commit()
 
         flash("Your blog post has been published.", "success")
-        return redirect(url_for("post_detail", post_id=post.id))
+
+        return redirect(
+            url_for("post_detail", post_id=post.id)
+        )
 
     return render_template("create_post.html", form=form)
 
@@ -166,7 +218,11 @@ def create_post():
 @app.route("/post/<int:post_id>")
 def post_detail(post_id):
     post = Post.query.get_or_404(post_id)
-    return render_template("post_detail.html", post=post)
+
+    return render_template(
+        "post_detail.html",
+        post=post
+    )
 
 
 # EDIT POST
@@ -184,10 +240,18 @@ def edit_post(post_id):
         post.title = form.title.data.strip()
         post.content = form.content.data.strip()
 
+        update_post_tags(
+            post,
+            request.form.get("tags", "")
+        )
+
         db.session.commit()
 
         flash("Post updated successfully.", "success")
-        return redirect(url_for("post_detail", post_id=post.id))
+
+        return redirect(
+            url_for("post_detail", post_id=post.id)
+        )
 
     return render_template(
         "edit_post.html",
@@ -209,6 +273,7 @@ def delete_post(post_id):
     db.session.commit()
 
     flash("Post deleted successfully.", "success")
+
     return redirect(url_for("home"))
 
 
@@ -217,6 +282,7 @@ def delete_post(post_id):
 @login_required
 def add_comment(post_id):
     post = Post.query.get_or_404(post_id)
+
     content = request.form.get("content", "").strip()
 
     if content:
@@ -225,13 +291,18 @@ def add_comment(post_id):
             user_id=current_user.id,
             post_id=post.id
         )
+
         db.session.add(comment)
         db.session.commit()
+
         flash("Comment added.", "success")
+
     else:
         flash("Comment cannot be empty.", "error")
 
-    return redirect(url_for("post_detail", post_id=post.id))
+    return redirect(
+        url_for("post_detail", post_id=post.id)
+    )
 
 
 # DELETE COMMENT
@@ -240,8 +311,10 @@ def add_comment(post_id):
 def delete_comment(comment_id):
     comment = Comment.query.get_or_404(comment_id)
 
-    if (comment.user_id != current_user.id
-            and comment.post.user_id != current_user.id):
+    if (
+        comment.user_id != current_user.id
+        and comment.post.user_id != current_user.id
+    ):
         abort(403)
 
     post_id = comment.post_id
@@ -250,8 +323,10 @@ def delete_comment(comment_id):
     db.session.commit()
 
     flash("Comment deleted.", "success")
-    return redirect(url_for("post_detail", post_id=post_id))
 
+    return redirect(
+        url_for("post_detail", post_id=post_id)
+    )
 
 
 # USER PROFILE
@@ -285,5 +360,6 @@ def not_found(error):
     ), 404
 
 
+# RUN APPLICATION
 if __name__ == "__main__":
     app.run(debug=True)

@@ -1,22 +1,61 @@
+
 {% extends "base.html" %}
-{% block title %}Edit post | BlogSpace{% endblock %}
+
+{% block title %}Edit Post | BlogSpace{% endblock %}
+
 {% block content %}
+
 <section class="form-page">
-  <p class="eyebrow">UPDATE STORY</p>
-  <h1>Edit your post</h1>
-  <form class="editor-form" method="POST">
-    {{ form.hidden_tag() }}
-    <label for="title">Post title</label>
-    <input id="title" name="title" type="text" maxlength="200" required value="{{ post.title }}">
-    <label for="content">Content</label>
-    <textarea id="content" name="content" rows="12" required>{{ post.content }}</textarea>
-    <label for="tags">Tags</label>
-<input id="tags" name="tags" type="text"
-       placeholder="Python, Flask, Web Development">
-    <div class="form-actions">
-      <a class="button button-light" href="{{ url_for('post_detail', post_id=post.id) }}">Cancel</a>
-      <button class="button" type="submit">Save changes</button>
-    </div>
-  </form>
+
+    <p class="eyebrow">UPDATE STORY</p>
+
+    <h1>Edit your post</h1>
+
+    <form method="POST" action="{{ url_for('edit_post', post_id=post.id) }}">
+
+        {{ form.hidden_tag() }}
+
+        <label for="title">Post title</label>
+
+        {{ form.title(
+            id="title",
+            placeholder="Enter post title",
+            required=True
+        ) }}
+
+        <label for="content">Content</label>
+
+        {{ form.content(
+            id="content",
+            rows="12",
+            placeholder="Edit your content...",
+            required=True
+        ) }}
+
+        <label for="tags">Tags</label>
+
+        <input
+            type="text"
+            id="tags"
+            name="tags"
+            value="{{ post.tags | map(attribute='name') | join(', ') }}"
+            placeholder="Python, Flask, Web Development"
+        >
+
+        <div class="form-actions">
+
+            <a href="{{ url_for('post_detail', post_id=post.id) }}">
+                Cancel
+            </a>
+
+            <button type="submit" class="button">
+                Save Changes
+            </button>
+
+        </div>
+
+    </form>
+
 </section>
+
 {% endblock %}

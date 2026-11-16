@@ -94,3 +94,31 @@ textarea { resize: vertical; }
   .post-grid { grid-template-columns: 1fr; }
   .auth-card { padding: 25px; }
 }
+
+.form-page {
+    display: block !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+    max-width: 600px;
+    margin: 50px auto;
+    padding: 35px;
+    background: white;
+    color: #172033 !important;
+    border-radius: 15px;
+}
+
+.form-page h1,
+.form-page p,
+.form-page label {
+    color: #172033 !important;
+}
+
+.form-page input {
+    display: block;
+    width: 100%;
+    padding: 12px;
+    margin: 10px 0 20px;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    box-sizing: border-box;
+}
